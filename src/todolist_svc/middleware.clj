@@ -9,7 +9,6 @@
 
 (add-encoder java.lang.Exception
  (fn [e jg]
-    
   (.writeStartObject jg) 
   (.writeFieldName jg "exception") 
   (.writeString jg (.getName (class e))) 
