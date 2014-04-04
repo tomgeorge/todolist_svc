@@ -17,3 +17,8 @@ To start a web server for the application, run:
 ## License
 
 Copyright © 2014 FIXME
+=======
+todolist_svc
+============
+
+A todolist web service in Clojure
