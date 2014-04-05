@@ -1,5 +1,5 @@
 (ns todolist_svc.middleware
-  (:require [cheshire.generate :refer [encode-str add-encoder]]
+  (:require [cheshire.generate :refer [add-encoder]]
             [clojure.string :refer [upper-case]]
             [ring.mock.request :refer [body]]
             [ring.util.response :refer [response status]]
@@ -36,6 +36,10 @@
   (fn [req]
     (try
       (handler req)
+      (catch IllegalArgumentException e
+        (->
+          (response e)
+          (status 400)))
       (catch Exception e
         (->
           (response e)
