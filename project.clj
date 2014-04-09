@@ -8,7 +8,8 @@
                  [com.taoensso/timbre "3.1.6"]
                  [cheshire "5.3.1"]
                  [com.novemberain/monger "1.7.0"]
-                 [com.novemberain/validateur "2.0.0"]]  
+                 [com.novemberain/validateur "2.0.0"]
+                 [slingshot "0.10.3"]]  
   :plugins [[lein-ring "0.8.10"]
             [quickie "0.2.5"]] 
   :ring {:handler todolist_svc.handler/app}

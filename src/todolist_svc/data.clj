@@ -4,9 +4,9 @@
             [monger.core :refer [connect! get-db set-db!]]
             [monger.result :refer [ok?]]
             [monger.util :as util]
-            [monger.joda-time]
-            [monger.json]
-            [validateur.validation :refer :all]))
+            [slingshot.slingshot :refer [throw+]]
+            [validateur.validation :refer :all])
+  (:import (org.bson.types ObjectId)))
 
 (def mongo-options
   {:host "localhost"
@@ -35,11 +35,36 @@
                       (presence-of :created)
                       (presence-of :modified)))
 
+(defn- object-id? [id]
+  (and
+    (not (nil? id))''
+    (string? id)
+    (re-matches #"[0-9a-f]{24}" id)))
+
 (defn create-doit
   [doit]
   (let [new-doit (created-now (modified-now (with-oid doit)))]
     (if (valid? doit-validator new-doit)
       (if (ok? (collection/insert (mongo-options :doits-collection) new-doit))
         new-doit
-        (throw (Exception. "Write Failed")))
-      (throw (IllegalArgumentException.)))))
+        (throw+ {:type ::failed} "Create Failed"))
+      (throw+ {:type ::invalid} "Invalid DoIt"))))
+
+(defn get-doit
+  [id]
+  (if (object-id? id)
+    (let [doit (collection/find-one-as-map
+                 (mongo-options :doits-collection) { :_id (ObjectId. id)})]
+      (if (nil? doit)
+        (throw+ {:type ::not-found} (str id " not found"))
+        doit))
+    (throw+ {:type ::invalid} "Invaild DoIt ID")))
+
+(defn delete-doit
+  [id]
+  (validate [id :ObjectId])
+  (let [doit (get-doit id)]
+    (if (ok? (collection/remove-by-id 
+             (mongo-options :doits-collection) (ObjectId. id)))
+    doit 
+    (throw+ {:type ::failed} "Delete Failed"))))
